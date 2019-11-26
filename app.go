@@ -116,7 +116,7 @@ func handleEvent(recvMsg [1024]byte) {
 		statusData, _ := strconv.ParseUint(fmt.Sprintf("%x", recvMsg[44:45]), 16, 8)
 		status := fmt.Sprintf("%d", statusData)
 		fmt.Printf("卡号：%s %s 状态：%s\n", card, cardinfo.DoorInfo[door], cardinfo.CardStatus[status])
-		values := url.Values{"card": {card}, "door": {door}, "status": {status}}
+		values := url.Values{"k": {"d3be23e218c4f759be2eca23543dc243"}, "card": {card}, "door": {door}, "status": {status}}
 		ret := httpPostForm("http://127.0.0.1:8001/read_card", values)
 		fmt.Println(ret)
 	case eventGoOutSwitch: // 出门开关消息
