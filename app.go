@@ -1,10 +1,10 @@
 package main
 
 import (
+	"anbandevice/cardinfo"
 	"bufio"
 	"encoding/hex"
 	"fmt"
-	"anbandevice/cardinfo"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -109,14 +109,14 @@ func handleEvent(recvMsg [1024]byte) {
 	switch evt {
 	case eventReadCard: // 读卡消息
 		fmt.Println("读卡消息")
-		cardData := fmt.Sprintf("%x", recvMsg[32:37])
-		cardNum, _ := strconv.ParseUint(cardData, 16, 40) // 卡号
-		doorNum := fmt.Sprintf("%x", recvMsg[43:44]) // 门号
-		//door, _ := strconv.ParseUint(doorNum, 16, 8)
-		cardStatus := fmt.Sprintf("%x", recvMsg[44:45]) // 状态
-		//status, _ := strconv.ParseUint(cardStatus, 16, 8)
-		fmt.Printf("卡号：%d %s 状态：%v\n", cardNum, cardinfo.DoorInfo[doorNum], cardinfo.CardStatus[cardStatus])
-		values := url.Values{"card": {cardData}, "door": {doorNum}, "status": {cardStatus}}
+		cardData, _ := strconv.ParseUint(fmt.Sprintf("%x", recvMsg[32:37]), 16, 40)
+		card := fmt.Sprintf("%d", cardData)
+		doorData, _ := strconv.ParseUint(fmt.Sprintf("%x", recvMsg[43:44]), 16, 8)
+		door := fmt.Sprintf("%d", doorData)
+		statusData, _ := strconv.ParseUint(fmt.Sprintf("%x", recvMsg[44:45]), 16, 8)
+		status := fmt.Sprintf("%d", statusData)
+		fmt.Printf("卡号：%s %s 状态：%s\n", card, cardinfo.DoorInfo[door], cardinfo.CardStatus[status])
+		values := url.Values{"card": {card}, "door": {door}, "status": {status}}
 		ret := httpPostForm("http://127.0.0.1:8001/read_card", values)
 		fmt.Println(ret)
 	case eventGoOutSwitch: // 出门开关消息
