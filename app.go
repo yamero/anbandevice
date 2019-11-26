@@ -78,7 +78,11 @@ func main()  {
 	//commandObj.GetTcpParameter(conn) // 获取TCP参数
 	//commandObj.GetOpenDoorTimes(conn) // 获取所有开门时间段
 	//commandObj.OpenDataMonitor(conn) // 开启数据监控
-	//commandObj.GetAllGrantedCard(conn) // 获取所有授权卡（排序区）
+	cardList := commandObj.GetAllGrantedCard(conn) // 获取所有授权卡（排序区）
+	commandObj.ClearAllGrantedCard(conn)
+	commandObj.StartWriteGrantCard(conn) // 开启写入授权卡
+	commandObj.WriteGrantCard(conn, cardList, 1122) // 写入授权卡
+	commandObj.EndWriteGrantCard(conn) // 结束写入授权卡，并更新授权卡信息
 
 
 	// 一周七天，每天可以设置八个时间段，"0"表示不设置

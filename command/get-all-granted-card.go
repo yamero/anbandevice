@@ -9,10 +9,9 @@ import (
 
 // 获取所有授权卡（排序区）
 func (c *Command) GetAllGrantedCard(conn net.Conn) []int {
-	defer conn.Close()
 	var cardList []int
 	control := []byte{0x07, 0x03, 0x00}
-	data := []byte{2} // 只获取排序区
+	data := []byte{1} // 只获取排序区
 	c.ControlCode = control
 	c.Data = data
 	commandData := c.GetByteData()
