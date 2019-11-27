@@ -2,6 +2,7 @@ package command
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"net"
 	"strconv"
@@ -29,13 +30,14 @@ func (c *Command) GetAllGrantedCard(conn net.Conn) []int {
 			fmt.Println("接收数据失败！")
 			break
 		}
-		sta := fmt.Sprintf("%x", recvMsg[25:28])
-		if sta == "3703ff" {
+		fmt.Printf("%x\n", recvMsg[:n])
+		allRecv = append(allRecv, recvMsg[:n]...)
+		if bytes.HasSuffix(allRecv, []byte{0x7e}) {
 			break
 		}
-		allRecv = append(allRecv, recvMsg[:n]...)
 	}
-	if len(allRecv) > 32 {
+	sta := fmt.Sprintf("%x", allRecv[25:28])
+	if sta == "370300" {
 		num, _ := strconv.ParseUint(fmt.Sprintf("%x", allRecv[32:36]), 16, 32)
 		for i := 0; i < int(num); i++ {
 			start := i * 33 + 36

@@ -29,7 +29,7 @@ func recvUdpMsg(conn *net.UDPConn, deviceInfoCh chan<- string)  {
 
 func main()  {
 
-	fmt.Println("开始搜索设备...")
+	/*fmt.Println("开始搜索设备...")
 	// IP地址要和设备在同已网段，端口随意，只要不是被占用的端口都可以
 	localAddr, err := net.ResolveUDPAddr("udp", "192.168.1.152:8102")
 	if err != nil {
@@ -64,7 +64,7 @@ func main()  {
 	udpConn.Close()
 
 	deviceInfo := <- deviceInfoCh
-	fmt.Printf("已搜索到设备，开始连接设备 %s\n", deviceInfo)
+	fmt.Printf("已搜索到设备，开始连接设备 %s\n", deviceInfo)*/
 
 	conn, err := net.Dial("tcp", "192.168.1.150:8000")
 	if err != nil {
@@ -74,16 +74,21 @@ func main()  {
 	defer conn.Close()
 	fmt.Println("设备连接成功")
 
-	commandObj = command.NewCommand(deviceInfo, []byte{0xff, 0xff, 0xff, 0xff}, "nini")
+	commandObj := command.NewCommand("YC-3224T29084241", []byte{0xff, 0xff, 0xff, 0xff}, "nini")
 	//commandObj.GetTcpParameter(conn) // 获取TCP参数
 	//commandObj.GetOpenDoorTimes(conn) // 获取所有开门时间段
 	//commandObj.OpenDataMonitor(conn) // 开启数据监控
-	cardList := commandObj.GetAllGrantedCard(conn) // 获取所有授权卡（排序区）
-	commandObj.ClearAllGrantedCard(conn)
-	commandObj.StartWriteGrantCard(conn) // 开启写入授权卡
-	commandObj.WriteGrantCard(conn, cardList, 1122) // 写入授权卡
-	commandObj.EndWriteGrantCard(conn) // 结束写入授权卡，并更新授权卡信息
 
+
+	commandObj.GetGrantedCardInfo(conn) // 获取排序区与非排序区容量与已存数量
+	cardList := commandObj.GetAllGrantedCard(conn) // 获取所有授权卡（排序区）
+	fmt.Println(cardList)
+	/*commandObj.ClearAllGrantedCard(conn) // 清空授权卡
+	time.Sleep(time.Second * 1)
+	commandObj.StartWriteGrantCard(conn) // 开启写入授权卡
+	commandObj.WriteGrantCard(conn, cardList, []int{38, 39}) // 写入授权卡
+	commandObj.EndWriteGrantCard(conn) // 结束写入授权卡，并更新授权卡信息
+	time.Sleep(time.Second * 3)*/
 
 	// 一周七天，每天可以设置八个时间段，"0"表示不设置
 	/*times := map[int][8]string{

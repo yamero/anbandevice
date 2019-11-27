@@ -7,7 +7,6 @@ import (
 
 // 清空所有授权卡（排序区）
 func (c *Command) ClearAllGrantedCard(conn net.Conn) {
-	defer conn.Close()
 	control := []byte{0x07, 0x02, 0x00}
 	data := []byte{1} // 只清空排序区
 	c.ControlCode = control
@@ -25,7 +24,8 @@ func (c *Command) ClearAllGrantedCard(conn net.Conn) {
 		return
 	}
 	sta := fmt.Sprintf("%x", recvMsg[25:28])
-	if sta == returnOk {
+	fmt.Printf("清空授权卡信息：%x\n", recvMsg[:n])
+	if sta == returnOk || sta == "3703ff" {
 		fmt.Println("授权卡信息已清空")
 	} else {
 		fmt.Println("授权卡信息清空失败！")

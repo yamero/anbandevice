@@ -24,7 +24,8 @@ func (c *Command) StartWriteGrantCard(conn net.Conn) {
 		return
 	}
 	sta := fmt.Sprintf("%x", recvMsg[25:28])
-	if sta == returnOk {
+	fmt.Printf("开启授权卡：%x\n", recvMsg[:n])
+	if sta == returnOk || sta == "3703ff" {
 		fmt.Println("开启授权卡成功")
 	} else {
 		fmt.Println("开启授权卡失败！")

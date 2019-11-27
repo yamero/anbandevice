@@ -7,7 +7,6 @@ import (
 
 // 结束写入授权卡，更新信息（排序区）
 func (c *Command) EndWriteGrantCard(conn net.Conn) {
-	defer conn.Close()
 	control := []byte{0x07, 0x07, 0x02}
 	data := []byte{}
 	c.ControlCode = control

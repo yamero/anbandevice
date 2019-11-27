@@ -8,22 +8,23 @@ import (
 )
 
 // 写入授权卡（排序区）
-func (c *Command) WriteGrantCard(conn net.Conn, cardList []int, card int) {
+func (c *Command) WriteGrantCard(conn net.Conn, oldCardList []int, newCardList []int) {
 	control := []byte{0x07, 0x07, 0x01}
-	start := Int2hex(len(cardList) + 1, 8) // 起始序号同时也是每次写入的数量
+	start := Int2hex(1, 8)
 	data := []byte{}
-	data = append(data, start...)
-	data = append(data, start...)
-	cardList = append(cardList, card)
-	sort.Ints(cardList)
+	data = append(data, start...) // 新增的卡号从哪里开始写
+	data = append(data, Int2hex(len(oldCardList) + len(newCardList), 8)...) // 每次新增几个卡号
+	oldCardList = append(oldCardList, newCardList...)
+	sort.Ints(oldCardList) // 卡号从小到大进行排序
 	end, _ := hex.DecodeString("ffffffff881230235901010000ffff30000000000000000000000000")
-	for _, tCard := range cardList {
+	for _, tCard := range oldCardList {
 		data = append(data, Int2hex(tCard, 10)...)
 		data = append(data, end...)
 	}
 	c.ControlCode = control
 	c.Data = data
 	commandData := c.GetByteData()
+	fmt.Printf("写入授权卡命令：%x\n", commandData)
 	_, err := conn.Write(commandData)
 	if err != nil {
 		fmt.Println("命令无法发送，写入授权卡失败！", err)
