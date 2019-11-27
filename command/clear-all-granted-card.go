@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 )
@@ -18,16 +19,22 @@ func (c *Command) ClearAllGrantedCard(conn net.Conn) {
 		return
 	}
 	var recvMsg [1024]byte
-	n, err := conn.Read(recvMsg[:])
-	if err != nil || n <= 0 {
-		fmt.Println("命令执行结果未知，清空授权卡信息失败！")
-		return
+	var allRecv []byte
+	for {
+		n, err := conn.Read(recvMsg[:])
+		if err != nil || n <= 0 {
+			fmt.Println("无法接收信息，清空授权卡信息失败！")
+			return
+		}
+		allRecv = append(allRecv, recvMsg[:n]...)
+		if bytes.HasSuffix(allRecv, []byte{0x7e}) {
+			break
+		}
 	}
-	sta := fmt.Sprintf("%x", recvMsg[25:28])
-	fmt.Printf("清空授权卡信息：%x\n", recvMsg[:n])
+	sta := fmt.Sprintf("%x", allRecv[25:28])
 	if sta == returnOk || sta == "3703ff" {
-		fmt.Println("授权卡信息已清空")
+		fmt.Println("清空授权卡信息成功！")
 	} else {
-		fmt.Println("授权卡信息清空失败！")
+		fmt.Println("清空授权卡信息失败！")
 	}
 }

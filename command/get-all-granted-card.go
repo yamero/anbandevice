@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// 获取所有授权卡（排序区）
+// 获取所有已授权卡列表（排序区）
 func (c *Command) GetAllGrantedCard(conn net.Conn) []int {
 	var cardList []int
 	control := []byte{0x07, 0x03, 0x00}
@@ -18,31 +18,38 @@ func (c *Command) GetAllGrantedCard(conn net.Conn) []int {
 	commandData := c.GetByteData()
 	_, err := conn.Write(commandData)
 	if err != nil {
-		fmt.Println("命令无法发送，授权卡信息获取失败！")
+		fmt.Println("命令无法发送，已授权卡列表获取失败！")
 		return cardList
 	}
-	var recvMsg [1024]byte
 	bufReader := bufio.NewReader(conn)
-	var allRecv []byte
+	var recvMsg [1024]byte
+	var recvData []byte
+	var tmp []byte
 	for {
 		n, err := bufReader.Read(recvMsg[:])
 		if err != nil {
-			fmt.Println("接收数据失败！")
+			fmt.Println("无法接收数据，已授权卡列表获取失败！")
 			break
 		}
-		fmt.Printf("%x\n", recvMsg[:n])
-		allRecv = append(allRecv, recvMsg[:n]...)
-		if bytes.HasSuffix(allRecv, []byte{0x7e}) {
-			break
+		tmp = append(tmp, recvMsg[:n]...)
+		if bytes.HasSuffix(tmp, []byte{0x7e}) {
+			recvStatus := fmt.Sprintf("%x", tmp[25:28])
+			if recvStatus == returnOk || recvStatus == "3703ff" {
+				break
+			}
+			tmpDataLen, _ := strconv.ParseUint(fmt.Sprintf("%x", tmp[28:32]), 16, 32)
+			dataStart := 36
+			dataEnd := 32 + int(tmpDataLen)
+			recvData = append(recvData, tmp[dataStart:dataEnd]...)
+			tmp = []byte{}
 		}
 	}
-	sta := fmt.Sprintf("%x", allRecv[25:28])
-	if sta == "370300" {
-		num, _ := strconv.ParseUint(fmt.Sprintf("%x", allRecv[32:36]), 16, 32)
+	if len(recvData) >= 33 {
+		num := len(recvData) / 33
 		for i := 0; i < int(num); i++ {
-			start := i * 33 + 36
+			start := i * 33
 			end := start + 5
-			cardNum, _ := strconv.ParseUint(fmt.Sprintf("%x", allRecv[start:end]), 16, 40)
+			cardNum, _ := strconv.ParseUint(fmt.Sprintf("%x", recvData[start:end]), 16, 40)
 			cardList = append(cardList, int(cardNum))
 		}
 	}

@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 )
@@ -14,20 +15,26 @@ func (c *Command) StartWriteGrantCard(conn net.Conn) {
 	commandData := c.GetByteData()
 	_, err := conn.Write(commandData)
 	if err != nil {
-		fmt.Println("命令无法发送，开启授权卡失败！")
+		fmt.Println("命令无法发送，开启授权卡写入缓冲区失败！")
 		return
 	}
 	var recvMsg [1024]byte
-	n, err := conn.Read(recvMsg[:])
-	if err != nil || n <= 0 {
-		fmt.Println("命令执行结果未知，开启授权卡失败！")
-		return
+	var allRecv []byte
+	for {
+		n, err := conn.Read(recvMsg[:])
+		if err != nil || n <= 0 {
+			fmt.Println("无法接收信息，开启授权卡写入缓冲区失败！")
+			return
+		}
+		allRecv = append(allRecv, recvMsg[:n]...)
+		if bytes.HasSuffix(allRecv, []byte{0x7e}) {
+			break
+		}
 	}
-	sta := fmt.Sprintf("%x", recvMsg[25:28])
-	fmt.Printf("开启授权卡：%x\n", recvMsg[:n])
+	sta := fmt.Sprintf("%x", allRecv[25:28])
 	if sta == returnOk || sta == "3703ff" {
-		fmt.Println("开启授权卡成功")
+		fmt.Println("开启授权卡写入缓冲区成功！")
 	} else {
-		fmt.Println("开启授权卡失败！")
+		fmt.Println("开启授权卡写入缓冲区失败！")
 	}
 }
