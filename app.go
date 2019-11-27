@@ -88,7 +88,7 @@ func main()  {
 	commandObj.ClearAllGrantedCard(conn) // 清空原来的所有授权卡（排序区每次写入必须先清空）
 	time.Sleep(time.Second * 2)
 	commandObj.StartWriteGrantCard(conn) // 开启缓冲区
-	newCardList := []int{126}
+	newCardList := []int{126, 127}
 	cardList = append(cardList, newCardList...)
 	sort.Ints(cardList)
 	for i := 1; i <= len(cardList); i++ {

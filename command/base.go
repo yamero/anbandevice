@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -51,12 +52,17 @@ func (c *Command) GetByteData() []byte {
 		data = append(data, c.Data...)
 	}
 	data = GetFullData(data)
-	return data
+	newData := []byte{0x7e}
+	content := bytes.ReplaceAll(data[1:len(data)-1], []byte{0x7f}, []byte{0x7f, 0x02})
+	content = bytes.ReplaceAll(content, []byte{0x7e}, []byte{0x7f, 0x01})
+	newData = append(newData, content...)
+	newData = append(newData, 0x7e)
+	return newData
 }
 
 // 获得完整的命令数据
 func GetFullData(data []byte) []byte {
-	// 计算检验码（除标志码和检验码，命令中所有字节都相加然后取尾子节）
+	// 计算检验码（除开始结束标志码和检验码，命令中所有字节都相加然后取尾子节）
 	sum := 0
 	for k, v := range data {
 		if k == 0 { // 排除开始标志码
@@ -85,4 +91,15 @@ func Int2hex(num int, n int) []byte {
 	s = strings.Repeat("0", n-len(s)) + s
 	s1, _ := hex.DecodeString(s)
 	return s1
+}
+
+// 将接收到的数据进行转译码处理
+func RecvDataTranslation(data []byte) []byte {
+	newData := []byte{0x7e}
+	data = data[1:len(data)-1]
+	data = bytes.ReplaceAll(data, []byte{0x7f, 0x01}, []byte{0x7e})
+	data = bytes.ReplaceAll(data, []byte{0x7f, 0x02}, []byte{0x7f})
+	newData = append(newData, data...)
+	newData = append(newData, 0x7e)
+	return newData
 }

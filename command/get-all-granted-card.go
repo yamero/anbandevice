@@ -33,6 +33,7 @@ func (c *Command) GetAllGrantedCard(conn net.Conn) []int {
 		}
 		tmp = append(tmp, recvMsg[:n]...)
 		if bytes.HasSuffix(tmp, []byte{0x7e}) {
+			tmp = RecvDataTranslation(tmp)
 			recvStatus := fmt.Sprintf("%x", tmp[25:28])
 			if recvStatus == returnOk || recvStatus == "3703ff" {
 				break

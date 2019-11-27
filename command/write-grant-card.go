@@ -1,7 +1,6 @@
 package command
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"net"
@@ -19,13 +18,8 @@ func (c *Command) WriteGrantCard(conn net.Conn, startSn int, card int) {
 	c.ControlCode = control
 	c.Data = data
 	commandData := c.GetByteData()
-	newCommandData := []byte{}
-	newCommandData = append(newCommandData, commandData[0:40]...)
-	newCardByte := bytes.ReplaceAll(commandData[40:45], []byte{0x7e}, []byte{0x7f, 0x01})
-	newCommandData = append(newCommandData, newCardByte...)
-	newCommandData = append(newCommandData, commandData[45:]...)
-	fmt.Printf("%x\n", newCommandData)
-	_, err := conn.Write(newCommandData)
+	fmt.Printf("%x\n", commandData)
+	_, err := conn.Write(commandData)
 	if err != nil {
 		fmt.Println("命令无法发送，写入授权卡失败！", err)
 		return
